@@ -1,0 +1,43 @@
+﻿@using System.Timers
+@using System.ComponentModel.DataAnnotations
+@using UsingIndention.Extensions
+@implements IDisposable
+
+<span>@_currentTimeString</span>
+
+@code{
+    [Parameter, EditorRequired] public required DateTime StartDateTime { get; set; }
+    [Parameter, EditorRequired] public required DateTime EndDateTime { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
+
+    private Timer _secondElapsedTimer = new Timer(200);
+    private string _currentTimeString { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _secondElapsedTimer.Elapsed += TimeElapsed;
+        _secondElapsedTimer.Start();
+    }
+
+    private void TimeElapsed(object? sender, ElapsedEventArgs e)
+    {
+        DateTime endDateTime;
+
+        if (IsEnabled)
+        {
+            endDateTime = DateTime.UtcNow;
+        } else
+        {
+            endDateTime = EndDateTime;
+        }
+
+        _currentTimeString = (endDateTime - StartDateTime).ToReadableTime();
+
+        InvokeAsync(StateHasChanged);
+    }
+
+	public void Dispose()
+	{
+		_secondElapsedTimer.Dispose();
+	}
+}
